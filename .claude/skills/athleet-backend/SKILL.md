@@ -25,8 +25,12 @@ Source of truth for requirements: the Athleet Platform Functionality Document
 
 ## Module layout
 
+Maven multi-module: `backend/pom.xml` is the parent (Spring Boot parent, shared versions);
+each module has its own `pom.xml`. Build from `backend/` with `mvn clean package`.
+
 ```
 backend/
+├── pom.xml          parent POM
 ├── athleet-core/    shared, program-agnostic platform code
 ├── athleet-ajsdp/   everything specific to AJSDP
 ├── athleet-uksc/    everything specific to UKSC
@@ -93,6 +97,80 @@ Packages: `com.athleet.core.*`, `com.athleet.ajsdp.*`, `com.athleet.uksc.*`, `co
 - Report cards are published manually per school/batch.
 - Payments: Razorpay online + manual cash/UPI/bank entry; GST configurable per school/academy; invoice numbers per financial year.
 - OTP SMS provider not chosen yet — in dev, log OTPs instead of sending.
+
+## Security: write SAST-clean code
+
+Code must pass static security analysis (SonarQube, Semgrep, SpotBugs/FindSecBugs, Snyk Code, Checkmarx-style rules) without suppressions. Write it right the first time:
+
+**Injection**
+- Use Spring Data derived queries, JPQL/Criteria with bind parameters (`:name`), or `JdbcTemplate` with `?` placeholders. **Never** build SQL/JPQL by string concatenation or `String.format`, including `ORDER BY` — map sort fields through an allow-list enum.
+- No `Runtime.exec`/`ProcessBuilder` with user input. No user input in file paths: generate storage keys server-side (UUID) and never use the uploaded filename as a path.
+- No user input in log format strings or LDAP/XPath/regex built at runtime; escape or reject.
+
+**Authentication & access control**
+- Every endpoint is authenticated unless explicitly listed as public in the security config (OTP request/verify, login, refresh, Razorpay webhook). Deny by default.
+- Check role **and** scope in the service layer (not only `@PreAuthorize`), and check object ownership on every by-ID lookup (IDOR): load by `id AND scope`, return 404 if outside scope.
+- Passwords hashed with `BCryptPasswordEncoder`/`DelegatingPasswordEncoder` only. OTPs: 6 digits from `SecureRandom`, stored hashed, 5-minute expiry, max 5 attempts, rate-limited per number and IP.
+- JWT: sign with a strong key from config (HS256 ≥ 256-bit or RS256), always verify signature, `exp`, `iss`; never accept `alg=none`. Refresh tokens stored hashed, rotated on use, revocable.
+- Razorpay webhooks: verify the HMAC signature before trusting any payload; amounts always recomputed server-side from the invoice.
+
+**Secrets & config**
+- No secrets, keys, passwords or tokens in code, `application.yml` or Git. Read from environment variables (`${DB_PASSWORD}`); commit only `application-example.yml` placeholders.
+- No hard-coded credentials in seed data or migrations.
+
+**Data exposure**
+- Never return JPA entities from controllers — always DTOs. Never serialise password hashes, OTPs, tokens or internal IDs that aren't needed.
+- Don't log PII (child names, phone numbers, medical notes), tokens or OTPs. Mask phone numbers in logs (`98xxxxxx21`).
+- Global `@RestControllerAdvice` returns a generic error body; no stack traces or SQL messages to clients (`server.error.include-stacktrace=never`).
+
+**Input & files**
+- Validate every request DTO with `@Valid` + Bean Validation (`@NotNull`, `@Size`, `@Pattern`, `@Min/@Max`). Bound sizes of strings, lists and page size (max 100).
+- File uploads: allow-list content type **and** extension, enforce size limits, check magic bytes, store outside web root, serve via pre-signed URLs.
+- Excel uploads (Apache POI): protect against zip bombs/XXE — use POI defaults with `ZipSecureFile` limits; never enable external entities in any XML parser.
+- No Java native deserialisation (`ObjectInputStream`); Jackson without default typing.
+
+**Web**
+- CORS restricted to known web-admin origins (no `*` with credentials). CSRF disabled only because the API is stateless JWT with no cookies.
+- Security headers on (HSTS, X-Content-Type-Options, frame-options deny). HTTPS only in prod.
+- Use `SecureRandom` for anything security-related; never `Math.random`/`Random`.
+- Keep dependencies on the Spring Boot BOM versions; don't pin old versions of transitive libraries.
+
+## Design patterns and code structure
+
+- **Layered per feature**: `web → service → repository`. Controllers are thin (validate, call one service method, return DTO). Business rules live only in services/domain.
+- **DTOs as Java `record`s**; mapping via small static mapper methods or MapStruct — no entity leaks.
+- **Constructor injection only** (`final` fields, no `@Autowired` on fields).
+- **Strategy** for swappable providers behind core interfaces: `SmsSender` (log-only in dev, MSG91 etc. in prod), `PushSender`, `FileStorage` (local / S3), `PaymentGateway` (Razorpay). Select implementation via `@ConditionalOnProperty`.
+- **State machine** for workflows with explicit enums and allowed transitions in one place: session attendance (`DRAFT → SUBMITTED → APPROVED | REJECTED → RESUBMITTED`), registration/admission, invoice (`DUE → PARTIALLY_PAID → PAID | REFUNDED | WAIVED`). Reject illegal transitions with a domain exception.
+- **Domain events** (`ApplicationEventPublisher` + `@TransactionalEventListener(phase = AFTER_COMMIT)`) for side effects: attendance approved → absence alerts; report card published → parent notification; any audited change → audit record. Keeps modules decoupled and notifications out of the main transaction.
+- **Specification/Criteria** for dynamic list filters (scope + search + filters) instead of many repository methods.
+- **Template method** for shared flows that differ per program (e.g. report card generation, bulk upload validation) — the base lives in `core/common`, each program extends it in its own module.
+- **Scheduler** (`@Scheduled` + ShedLock if more than one instance) for 48h escalation, fee invoice generation and reminders. Jobs must be idempotent.
+- **Idempotency key** (client UUID) on sync and payment endpoints.
+- Custom exceptions (`NotFoundException`, `ForbiddenException`, `BusinessRuleException`) mapped centrally to HTTP status — no `try/catch` returning error strings in controllers.
+- Use `java.time` (`Instant` for timestamps in UTC, `LocalDate` for dates, zone `Asia/Kolkata` only at display/reporting). Money as `BigDecimal` with scale 2, never `double`.
+- Avoid: god services, static utility classes holding state, circular module dependencies, business logic in entities' getters, `Optional` as fields/parameters.
+
+## Performance
+
+**Database & JPA**
+- All associations `FetchType.LAZY` (including `@ManyToOne`). Load what a screen needs with `JOIN FETCH`, `@EntityGraph` or DTO projections — **avoid N+1** queries. Keep `spring.jpa.open-in-view=false`.
+- List/report endpoints use projections (interface/record DTOs) and return only needed columns.
+- **Always paginate** lists (`Pageable`, max page size 100). For large/infinite lists (attendance history, audit log) prefer keyset pagination on `(created_at, id)`.
+- Index every foreign key and every column used in `WHERE`/`ORDER BY` of hot queries (scope columns: `zone_id`, `cluster_id`, `school_id`, `academy_id`, `batch_id`, `session_date`). Add indexes in the same migration as the table.
+- Batch writes: `hibernate.jdbc.batch_size=50`, `order_inserts/order_updates=true`; use sequence-based IDs (or UUID generated in app), not `IDENTITY`, so batching works. Bulk Excel upload and sync use `saveAll` in chunks, not row-by-row transactions.
+- Keep transactions short: `@Transactional(readOnly = true)` on read services; no remote calls (SMS, push, S3, Razorpay) inside a DB transaction — publish an event and do it after commit.
+- Dashboards/aggregates computed with SQL `GROUP BY` (or pre-aggregated summary tables refreshed by a job), never by loading rows into Java and looping.
+- Use HikariCP defaults sized to the DB (start with pool size 10–20); watch slow-query logs (`log_min_duration_statement`).
+
+**API & app**
+- Heavy work runs async (`@Async` with a bounded `ThreadPoolTaskExecutor`): bulk uploads, report card PDF generation, bulk notifications, Excel/PDF exports. Return a job ID and let the client poll / get notified.
+- Stream large exports (Excel via SXSSF streaming workbook, CSV streaming) instead of building them in memory.
+- Cache rarely changing reference data (programs, benchmark tables, org structure, fee plans) with Spring Cache (Caffeine); evict on update.
+- Files go through pre-signed S3 URLs — the backend never proxies large file bytes.
+- Sync endpoint accepts batched payloads (e.g. up to 500 records) and processes them in one transaction per batch.
+- Enable response compression; keep JSON responses lean (no nested object graphs).
+- Use `Instant`-based filters with indexed date columns instead of functions on columns in `WHERE` (e.g. avoid `date(created_at) = ?`).
 
 ## When adding a feature
 
