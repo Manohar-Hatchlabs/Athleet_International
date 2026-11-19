@@ -12,7 +12,7 @@
 
     <artifactId>athleet-core</artifactId>
     <name>Athleet Core</name>
-    <description>Shared, program-agnostic platform: auth, IAM, notifications, storage, audit, consent, support</description>
+    <description>Platform: auth, IAM (roles, staff, permissions), organizations, audit, notifications, common web/security</description>
 
     <dependencies>
         <dependency>
@@ -52,6 +52,14 @@
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-jackson</artifactId>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springdoc</groupId>

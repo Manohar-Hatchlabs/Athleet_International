@@ -1,19 +1,48 @@
 # Athleet International
 
-Platform for Athleet's two programs — **AJSDP** (school-based junior sports development) and **UKSC Academy** (football academy) — with a Web admin, Parent app and Staff app.
+Sports academy platform for Athleet: a like-for-like rebuild of the Acadware admin, then Athleet-specific extensions.
+Programs such as **AJSDP** (school-based junior sports development) and **UKSC Academy** are organizations
+(tenants) in one generic platform: primary organization → affiliated academies → centers ("Class") → batches → students.
 
 ## Repository layout
 
 ```
-backend/        Spring Boot (Java 21, Maven) modular monolith — common API for web and apps
-  athleet-core/   shared: auth, users/roles/scopes, notifications, storage, audit, consent, support
-  athleet-ajsdp/  AJSDP-only modules
-  athleet-uksc/   UKSC-only modules
-  athleet-app/    Spring Boot entry point and configuration
-docs/           project documentation
-.claude/skills/athleet-backend/SKILL.md   backend architecture and conventions
+backend/                Spring Boot 3.5 (Java 21, Maven) modular monolith
+  athleet-core/           auth, organizations, roles/permissions, staff, audit, notifications
+  athleet-academy/        centers/classes, batches, students, dashboard
+  athleet-app/            Spring Boot entry point and configuration
+web/                    React admin (Vite + TypeScript + MUI + TanStack Query)
+docs/acadware-feature-inventory.md   Acadware parity checklist (what to build next)
+.claude/skills/athleet-backend/SKILL.md   backend architecture, security and conventions
 ```
 
-Web admin (React) and mobile apps (React Native) will be added later.
+Mobile apps (React Native) come later. Requirements: [Athleet Platform – Functionality Document](https://claude.ai/artifact/DQLuehzhzvhBoUcZkJsb3g)
 
-Requirements: [Athleet Platform – Functionality Document](https://claude.ai/artifact/DQLuehzhzvhBoUcZkJsb3g)
+## Status
+
+Built (foundation): login with Email / Mobile + password, invite and password reset, organization selector (primary +
+affiliates, Primary / Academy Admin views), roles with a permission matrix, staff, classes, batches (training days, timings,
+coaches, capacity), students (Active / Submitted, add/edit, batches/transfer, deregistration, approve), dashboard
+(headcount, age, gender, utilization), branding (center label, currency, date format).
+
+Next, from the inventory: attendance, reports, requests, expenses, messaging, posts, assessment, coaching drills,
+remaining settings. **Fees are deferred to the final phase.**
+
+## Run locally
+
+Prerequisites: JDK 21, Maven 3.9+, Node 20+, PostgreSQL 16.
+
+1. Create a database and user (example):
+   ```sql
+   create user athleet with password '<choose one>';
+   create database athleet owner athleet;
+   ```
+2. Set environment variables (see `backend/.env.example`; never commit real values):
+   `SPRING_PROFILES_ACTIVE=dev`, `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET` (base64, 32+ bytes:
+   `openssl rand -base64 48`), and for the first start `BOOTSTRAP_ADMIN_EMAIL` + `BOOTSTRAP_ADMIN_PASSWORD` (12+ characters)
+   to create the first platform admin. Remove the bootstrap values afterwards.
+3. Backend: `cd backend && mvn clean package && java -jar athleet-app/target/athleet-app-0.0.1-SNAPSHOT.jar`
+   (Flyway creates the schema; Swagger UI at http://localhost:8080/swagger-ui.html in the `dev` profile).
+4. Web: `cd web && npm install && npm run dev` → http://localhost:5173 (proxies `/api` to the backend).
+
+In the `dev` profile invite and reset links are written to the backend log instead of being emailed.

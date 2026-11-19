@@ -12,7 +12,7 @@
 
     <artifactId>athleet-app</artifactId>
     <name>Athleet App</name>
-    <description>Spring Boot entry point; assembles core, AJSDP and UKSC modules</description>
+    <description>Spring Boot entry point; assembles the core and academy modules</description>
 
     <dependencies>
         <dependency>
@@ -21,11 +21,7 @@
         </dependency>
         <dependency>
             <groupId>com.athleet</groupId>
-            <artifactId>athleet-ajsdp</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.athleet</groupId>
-            <artifactId>athleet-uksc</artifactId>
+            <artifactId>athleet-academy</artifactId>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>

@@ -1,0 +1,14 @@
+# Local development only. Activate with SPRING_PROFILES_ACTIVE=dev. Secrets still come from environment variables.
+athleet:
+  security:
+    refresh-cookie-secure: false
+    cors-allowed-origins: http://localhost:5173
+    web-base-url: ${WEB_BASE_URL:http://localhost:5173}
+  messaging:
+    provider: log
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
