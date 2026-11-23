@@ -19,8 +19,7 @@
 
     <modules>
         <module>athleet-core</module>
-        <module>athleet-ajsdp</module>
-        <module>athleet-uksc</module>
+        <module>athleet-academy</module>
         <module>athleet-app</module>
     </modules>
 
@@ -39,12 +38,7 @@
             </dependency>
             <dependency>
                 <groupId>com.athleet</groupId>
-                <artifactId>athleet-ajsdp</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.athleet</groupId>
-                <artifactId>athleet-uksc</artifactId>
+                <artifactId>athleet-academy</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

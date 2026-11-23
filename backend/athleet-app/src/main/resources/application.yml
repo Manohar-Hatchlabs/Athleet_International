@@ -1,0 +1,80 @@
+# Secrets and environment-specific values come only from environment variables. Nothing secret lives here.
+spring:
+  application:
+    name: athleet
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 50
+          time_zone: UTC
+        order_inserts: true
+        order_updates: true
+        default_batch_fetch_size: 50
+  flyway:
+    locations: classpath:db/migration/core,classpath:db/migration/academy
+  jackson:
+    default-property-inclusion: non_null
+    deserialization:
+      fail-on-unknown-properties: true
+  mvc:
+    problemdetails:
+      enabled: false
+
+server:
+  port: ${PORT:8080}
+  compression:
+    enabled: true
+  error:
+    include-stacktrace: never
+    include-message: never
+    include-binding-errors: never
+  forward-headers-strategy: ${FORWARD_HEADERS_STRATEGY:none}
+  servlet:
+    session:
+      tracking-modes: []
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+athleet:
+  security:
+    jwt-secret: ${JWT_SECRET}
+    jwt-issuer: ${JWT_ISSUER:athleet}
+    access-token-ttl: ${ACCESS_TOKEN_TTL:PT15M}
+    refresh-token-ttl: ${REFRESH_TOKEN_TTL:P14D}
+    password-token-ttl: ${PASSWORD_TOKEN_TTL:PT48H}
+    refresh-cookie-secure: ${REFRESH_COOKIE_SECURE:true}
+    cors-allowed-origins: ${CORS_ALLOWED_ORIGINS:}
+    web-base-url: ${WEB_BASE_URL}
+  messaging:
+    provider: ${MESSAGING_PROVIDER:none}
+  bootstrap:
+    admin-email: ${BOOTSTRAP_ADMIN_EMAIL:}
+    admin-password: ${BOOTSTRAP_ADMIN_PASSWORD:}
+
+logging:
+  level:
+    root: INFO
+    org.hibernate.SQL: WARN
