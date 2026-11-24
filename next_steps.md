@@ -20,10 +20,16 @@ Done and merged to `main`:
 | Access | Roles (Head Office / Class types) with a per-module permission matrix (`AppModule` × `AccessLevel`), center-scoped roles |
 | Staff | List, invite, edit, role assignment |
 | Classes | Centers ("Class", label configurable), batches with training days, timings, coaches and capacity |
-| Students | Active / Submitted tabs, add/edit, change batches, approve self-registrations, deregister; auto student number |
-| Dashboard | General tab: headcount, age and gender breakdown, utilization |
-| Settings | Branding basics (center label, currency, date format) |
+| Students | Active / Submitted tabs, add/edit (step 1 fields only), change batches, approve self-registrations, deregister; auto student number. Row menu: Edit, Batches, Transfer Student, Deregistration work; ID Card, Attendance, Tag Student, Injury Log, Student History show "(coming soon)" |
+| Dashboard | General tab only (Headcount, Utilization). The Attendance and Performance tabs show an info message |
+| Settings | Branding Preference only (center label, currency, date format). Every other settings section is a placeholder |
 | Web admin | React screens for all of the above; other sidebar items open a "Coming soon" page (`/org/:orgId/soon/:module`) |
+
+Notes on what "done" means here:
+- **Transfer Student** currently opens the same dialog as **Batches**: it moves a student between centers and batches
+  *inside one academy*. Transfer **between academies** (Acadware's `TransferPlayer`) is not built; it is in Phase 2.
+- The student table has no kit size, secondary contacts, or unique-ID prefix yet (Phase 2).
+- Email/SMS: only `log` and `none` message senders exist (`athleet.messaging.provider`), so nothing is actually sent.
 
 Not done yet: everything listed in Section 4, plus the items in Section 5.
 
@@ -41,7 +47,9 @@ Follow **Run locally** in the [README](README.md). In short:
 4. Web: `cd web && npm install && npm run dev` → http://localhost:5173.
 
 Gotchas:
-- Maven must run on **JDK 21**. If the build fails with a release/version error, set `JAVA_HOME` to the JDK 21 folder.
+- Maven must run on **JDK 21**. `java -version` can say 21 while Maven still uses another JDK, because Maven reads
+  `JAVA_HOME`. Check with `mvn -v`. The build now stops with "Athleet needs JDK 21 or newer" if it is wrong; set
+  `JAVA_HOME` to the JDK 21 folder (PowerShell: `$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21...'`).
 - In the `dev` profile, invite and reset links are written to the backend log instead of being emailed.
 - Stop the running backend before rebuilding on Windows, or the jar stays locked.
 
@@ -97,7 +105,8 @@ Each item maps to an `AppModule` value and to a section of the inventory. "Done 
 ### Phase 2 — Student profile completion (inventory §11.2)
 - Student profile page (opens from a row): details, secondary contacts, kit size, training days, history.
 - Remaining Add Student steps (parent/secondary contacts, kit size).
-- Row actions: ID Card, Tag Student, Injury Log, Transfer Student (between academies), Student History.
+- Row actions: ID Card, Tag Student, Injury Log, Student History (Attendance arrives with Phase 1). Replace the current
+  "Transfer Student" (which duplicates Batches) with a real transfer **between academies**, keeping a transfer history.
 - Bulk import (CSV) and bulk actions (deactivate/deregister) on selected rows.
 - Player Unique ID auto-generation setting (prefix + system ID).
 

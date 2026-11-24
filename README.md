@@ -43,6 +43,7 @@ Prerequisites: JDK 21, Maven 3.9+, Node 20+, PostgreSQL 16.
    to create the first platform admin. Remove the bootstrap values afterwards.
 3. Backend: `cd backend && mvn clean package && java -jar athleet-app/target/athleet-app-0.0.1-SNAPSHOT.jar`
    (Flyway creates the schema; Swagger UI at http://localhost:8080/swagger-ui.html in the `dev` profile).
+   Maven uses `JAVA_HOME`, not whatever `java` is first on your PATH: run `mvn -v` and make sure it reports Java 21.
 4. Web: `cd web && npm install && npm run dev` → http://localhost:5173 (proxies `/api` to the backend).
 
 In the `dev` profile invite and reset links are written to the backend log instead of being emailed.
