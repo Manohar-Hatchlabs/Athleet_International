@@ -55,10 +55,18 @@ added later; they depend on core (and academy if needed), never the other way ro
 | `iam` | Users, roles with per-module permissions (`AppModule` × `NONE/VIEW/MANAGE`), memberships (user ↔ organization ↔ role, optional center), staff, `AccessService` |
 | `audit` | Audit log written in the caller's transaction |
 | `notification` | `MessageSender` strategy (`log` in dev only, `none` default; real email/SMS/WhatsApp later) |
+| `storage` | `FileStorage` strategy (`local` in dev, `none` default, S3 Mumbai later), validated + re-encoded image uploads (`FileService`), `stored_file` metadata, HMAC-signed short-lived download links. Features claim a file with `FileService.attach` inside their own transaction |
 | `common/*` | `error`, `paging`, `persistence`, `security`, `config` |
 
 ### athleet-academy
-`center` (centers + batches) · `student` · `dashboard` · `common`. Implements core's `CenterDirectory` so core can validate center ids.
+`center` (centers + batches) · `student` · `dashboard` · `attendance` · `common`. Implements core's `CenterDirectory` so core can validate center ids.
+
+`attendance`: student sessions per batch and date (`SessionWorkflow` is the only place that defines status transitions;
+approval publishes `AttendanceSessionApproved` for after-commit listeners), staff in/out shifts (location recorded and
+flagged, never used to refuse a punch), per-organization `attendance_config`, and read-only live/tracker/student-month
+reports. Permissions: `ATTENDANCE` (view; MANAGE marks and submits, only batches the user coaches unless they also hold
+`ATTENDANCE_APPROVAL`) and `ATTENDANCE_APPROVAL` (approve, reject, reopen, correct punches). "Today" is Asia/Kolkata
+(`AttendanceClock`).
 
 ### Inside each feature package
 ```
@@ -81,7 +89,8 @@ added later; they depend on core (and academy if needed), never the other way ro
    Nobody can create/assign a role with more permission than they hold (escalation check in `RoleService`).
 3. **Module dependencies:** core never depends on academy; cross-module needs go through core interfaces (`CenterDirectory`).
 4. **Migrations** live in `athleet-core/.../db/migration/core` and `athleet-academy/.../db/migration/academy` (one `public` schema).
-   Name files `V<yyyyMMddHHmm>__<description>.sql`; never edit an applied migration; `ddl-auto=validate`.
+   Name files `V<yyyyMMdd><nnnn>__<description>.sql` (date plus a 4-digit sequence, e.g. `V202611240002__attendance.sql`);
+   never edit an applied migration; `ddl-auto=validate`. Use `integer` (not `smallint`) for columns mapped to Java `int`.
 5. **API paths:** `/api/v1/auth/**`, `/api/v1/organizations/**`, and everything tenant-scoped under `/api/v1/orgs/{orgId}/...`.
 6. **Audit**: create/update/delete of centers, batches, students, roles, staff (and later attendance, scores, fees) writes an audit
    record without personal details in `details`.

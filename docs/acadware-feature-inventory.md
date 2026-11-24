@@ -314,7 +314,7 @@ Acadware's model is **organization → affiliated academy → center ("Class") �
 | Dashboard: headcount, MoM, age/gender, locations map, utilization, live attendance | ajsdp/uksc dashboard | planned; add **utilization (capacity vs used)** and **live staff in/out** |
 | Students: list, active/submitted, add, bulk import, bulk actions, ID card, tags, injury log, transfer, history, deregistration | ajsdp/student, registration; uksc/player, admission | planned; **add** ID card, tags, injury log, transfer between academies, student history, unique-ID generator |
 | Class/center + batches (days, timings, coaches, capacity) | ajsdp/org + schedule; uksc/academy + batch | planned |
-| Attendance (staff selfie in/out, student attendance, back-dating rule, device ID) | ajsdp/uksc attendance | planned; add selfie + device-ID + backdate config |
+| Attendance (staff selfie in/out, student attendance, back-dating rule, device ID) | academy/attendance + core/storage | **built (API only, 2026-11)**: punches with selfie, geofence flag and device info, student sessions with approval, config, live view, tracker. Screens pending |
 | Session tracker / student session report (session-based billing) | fees + attendance | **gap** – session-pack billing not in our spec |
 | Assessment test bank (areas, parameters, unit, numeric/dropdown, comments rule), scores, report cards, leaderboards, fitness quotient | ajsdp/uksc assessment + reportcard | planned; mirror test-bank → parameters model |
 | Overall 5-star player rating, rank labels | uksc/observation | planned (UKSC); add to AJSDP if wanted |
