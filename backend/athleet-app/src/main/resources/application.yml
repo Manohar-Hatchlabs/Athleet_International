@@ -22,6 +22,10 @@ spring:
         default_batch_fetch_size: 50
   flyway:
     locations: classpath:db/migration/core,classpath:db/migration/academy
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
   jackson:
     default-property-inclusion: non_null
     deserialization:
@@ -70,6 +74,11 @@ athleet:
     web-base-url: ${WEB_BASE_URL}
   messaging:
     provider: ${MESSAGING_PROVIDER:none}
+  storage:
+    provider: ${STORAGE_PROVIDER:none}
+    local-root: ${STORAGE_LOCAL_ROOT:}
+    url-signing-secret: ${STORAGE_URL_SECRET:}
+    download-url-ttl: PT5M
   bootstrap:
     admin-email: ${BOOTSTRAP_ADMIN_EMAIL:}
     admin-password: ${BOOTSTRAP_ADMIN_PASSWORD:}

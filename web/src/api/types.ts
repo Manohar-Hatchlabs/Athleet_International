@@ -1,6 +1,6 @@
 export type AppModule =
   | 'DASHBOARD' | 'STUDENT' | 'CENTER' | 'ROLE' | 'STAFF' | 'REPORTS' | 'REQUEST' | 'EXPENSE'
-  | 'MESSAGING' | 'POSTS' | 'ASSESSMENT' | 'COACHING_DRILLS' | 'SETTINGS';
+  | 'MESSAGING' | 'POSTS' | 'ASSESSMENT' | 'COACHING_DRILLS' | 'SETTINGS' | 'ATTENDANCE' | 'ATTENDANCE_APPROVAL';
 export type AccessLevel = 'NONE' | 'VIEW' | 'MANAGE';
 export type RoleType = 'HEAD_OFFICE' | 'CENTER' | 'STUDENT';
 export type ActiveStatus = 'ACTIVE' | 'INACTIVE';
@@ -11,6 +11,8 @@ export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDA
 export const MODULES: { key: AppModule; label: string }[] = [
   { key: 'DASHBOARD', label: 'Dashboard' },
   { key: 'STUDENT', label: 'Student' },
+  { key: 'ATTENDANCE', label: 'Attendance (mark)' },
+  { key: 'ATTENDANCE_APPROVAL', label: 'Attendance (approve)' },
   { key: 'CENTER', label: 'Class' },
   { key: 'ROLE', label: 'Roles' },
   { key: 'STAFF', label: 'Staff' },

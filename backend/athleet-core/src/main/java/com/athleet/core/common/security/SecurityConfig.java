@@ -57,6 +57,8 @@ public class SecurityConfig {
                             "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/auth/logout",
                             "/api/v1/auth/forgot-password", "/api/v1/auth/set-password").permitAll();
                     a.requestMatchers(HttpMethod.GET, "/actuator/health").permitAll();
+                    // Signed download links: the HMAC signature and expiry in the URL are the authorization.
+                    a.requestMatchers(HttpMethod.GET, "/api/v1/files/signed/*").permitAll();
                     if (apiDocs) {
                         a.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
                     }

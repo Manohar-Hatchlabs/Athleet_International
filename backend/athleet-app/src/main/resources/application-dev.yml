@@ -6,6 +6,8 @@ athleet:
     web-base-url: ${WEB_BASE_URL:http://localhost:5173}
   messaging:
     provider: log
+  storage:
+    provider: ${STORAGE_PROVIDER:local}
 
 springdoc:
   api-docs:

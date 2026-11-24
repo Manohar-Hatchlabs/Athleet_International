@@ -26,6 +26,20 @@ public interface BatchRepository extends JpaRepository<Batch, UUID> {
 
     boolean existsByCenterIdAndNameIgnoreCaseAndIdNot(UUID centerId, String name, UUID id);
 
+    /** Active batches of the given centers that train on {@code day} and are running on {@code date}. */
+    @EntityGraph(attributePaths = {"slots", "coachUserIds"})
+    @Query("""
+            select distinct b from Batch b join b.slots sl
+            where b.centerId in :centerIds and b.status = com.athleet.academy.center.domain.ActiveStatus.ACTIVE
+              and sl.dayOfWeek = :day
+              and (b.startDate is null or b.startDate <= :date) and (b.endDate is null or b.endDate >= :date)
+            order by b.name
+            """)
+    List<Batch> scheduledOn(Collection<UUID> centerIds, java.time.DayOfWeek day, java.time.LocalDate date);
+
+    @EntityGraph(attributePaths = {"slots", "coachUserIds"})
+    List<Batch> findAllByIdIn(Collection<UUID> ids);
+
     /** [centerId, batchCount, capacitySum] for the given centers. */
     @Query("select b.centerId, count(b), coalesce(sum(b.capacity), 0) from Batch b where b.centerId in :centerIds group by b.centerId")
     List<Object[]> statsByCenter(Collection<UUID> centerIds);

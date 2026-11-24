@@ -33,14 +33,16 @@ public class DefaultRoles {
         Role owner = role(orgId, OWNER, RoleType.HEAD_OFFICE, true, AccessService.allManage());
         Map<AppModule, AccessLevel> admin = AccessService.allManage();
         Map<AppModule, AccessLevel> manager = perms(MANAGE, DASHBOARD, STUDENT, CENTER, STAFF, REPORTS, REQUEST, EXPENSE,
-                MESSAGING, POSTS, ASSESSMENT, COACHING_DRILLS);
-        Map<AppModule, AccessLevel> centerManager = perms(MANAGE, STUDENT, REQUEST, EXPENSE, MESSAGING, POSTS, ASSESSMENT, COACHING_DRILLS);
+                MESSAGING, POSTS, ASSESSMENT, COACHING_DRILLS, ATTENDANCE, ATTENDANCE_APPROVAL);
+        Map<AppModule, AccessLevel> centerManager = perms(MANAGE, STUDENT, REQUEST, EXPENSE, MESSAGING, POSTS, ASSESSMENT,
+                COACHING_DRILLS, ATTENDANCE, ATTENDANCE_APPROVAL);
         centerManager.put(DASHBOARD, VIEW);
         centerManager.put(CENTER, VIEW);
         centerManager.put(REPORTS, VIEW);
         Map<AppModule, AccessLevel> coach = perms(VIEW, DASHBOARD, STUDENT, COACHING_DRILLS);
         coach.put(ASSESSMENT, MANAGE);
         coach.put(EXPENSE, MANAGE);
+        coach.put(ATTENDANCE, MANAGE);
         roles.saveAll(List.of(
                 owner,
                 role(orgId, "Admin", RoleType.HEAD_OFFICE, false, admin),
