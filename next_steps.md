@@ -53,7 +53,7 @@ Not done yet: everything listed in Section 4, plus the items in Section 5.
 
 Follow **Run locally** in the [README](README.md). In short:
 
-1. Install JDK 21, Maven 3.9+, Node 20+, PostgreSQL 16.
+1. Install JDK 17, Maven 3.9+, Node 20+, PostgreSQL 16.
 2. Create a database, then copy `backend/.env.example` to `backend/.env` and fill it in. `.env` is git-ignored;
    **never commit real secrets.** Set `BOOTSTRAP_ADMIN_EMAIL` / `BOOTSTRAP_ADMIN_PASSWORD` for the first start only.
 3. Backend: `cd backend && mvn clean package`, then run `athleet-app/target/athleet-app-0.0.1-SNAPSHOT.jar`.
@@ -61,9 +61,9 @@ Follow **Run locally** in the [README](README.md). In short:
 4. Web: `cd web && npm install && npm run dev` → http://localhost:5173.
 
 Gotchas:
-- Maven must run on **JDK 21**. `java -version` can say 21 while Maven still uses another JDK, because Maven reads
-  `JAVA_HOME`. Check with `mvn -v`. The build now stops with "Athleet needs JDK 21 or newer" if it is wrong; set
-  `JAVA_HOME` to the JDK 21 folder (PowerShell: `$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21...'`).
+- Maven must run on **JDK 17 or newer**. `java -version` can say 17 while Maven still uses another JDK, because Maven
+  reads `JAVA_HOME`. Check with `mvn -v`. The build stops with "Athleet needs JDK 17 or newer" if the JDK is older; set
+  `JAVA_HOME` to a JDK 17 folder (PowerShell: `$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-17...'`).
 - In the `dev` profile, invite and reset links are written to the backend log instead of being emailed.
 - Stop the running backend before rebuilding on Windows, or the jar stays locked.
 - File uploads (attendance selfies) need `STORAGE_URL_SECRET` in `backend/.env` (at least 32 random characters). The

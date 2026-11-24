@@ -7,7 +7,7 @@ Programs such as **AJSDP** (school-based junior sports development) and **UKSC A
 ## Repository layout
 
 ```
-backend/                Spring Boot 3.5 (Java 21, Maven) modular monolith
+backend/                Spring Boot 3.5 (Java 17, Maven) modular monolith
   athleet-core/           auth, organizations, roles/permissions, staff, audit, notifications
   athleet-academy/        centers/classes, batches, students, dashboard
   athleet-app/            Spring Boot entry point and configuration
@@ -33,7 +33,7 @@ remaining settings. **Fees are deferred to the final phase.**
 
 ## Run locally
 
-Prerequisites: JDK 21, Maven 3.9+, Node 20+, PostgreSQL 16.
+Prerequisites: JDK 17, Maven 3.9+, Node 20+, PostgreSQL 16.
 
 1. Create a database and user (example):
    ```sql
@@ -46,7 +46,7 @@ Prerequisites: JDK 21, Maven 3.9+, Node 20+, PostgreSQL 16.
    to create the first platform admin. Remove the bootstrap values afterwards.
 3. Backend: `cd backend && mvn clean package && java -jar athleet-app/target/athleet-app-0.0.1-SNAPSHOT.jar`
    (Flyway creates the schema; Swagger UI at http://localhost:8080/swagger-ui.html in the `dev` profile).
-   Maven uses `JAVA_HOME`, not whatever `java` is first on your PATH: run `mvn -v` and make sure it reports Java 21.
+   Maven uses `JAVA_HOME`, not whatever `java` is first on your PATH: run `mvn -v` and make sure it reports Java 17.
    For file uploads (attendance selfies) also set `STORAGE_URL_SECRET` (32+ random characters); optional
    `STORAGE_LOCAL_ROOT` chooses the upload folder (default `~/.athleet/files`).
 4. Web: `cd web && npm install && npm run dev` → http://localhost:5173 (proxies `/api` to the backend).
