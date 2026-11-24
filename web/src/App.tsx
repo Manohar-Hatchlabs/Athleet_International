@@ -9,6 +9,7 @@ import { OrgSelectorPage } from './pages/OrgSelectorPage';
 import { Shell } from './components/Shell';
 import { DashboardPage } from './pages/DashboardPage';
 import { StudentsPage } from './pages/StudentsPage';
+import { StudentProfilePage } from './pages/StudentProfilePage';
 import { ClassesPage } from './pages/ClassesPage';
 import { RolesPage } from './pages/RolesPage';
 import { StaffPage } from './pages/StaffPage';
@@ -43,6 +44,7 @@ export function App() {
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="students" element={<StudentsPage />} />
+        <Route path="students/:studentId" element={<StudentProfilePage />} />
         <Route path="attendance" element={<AttendancePage />} />
         <Route path="classes" element={<ClassesPage />} />
         <Route path="roles" element={<RolesPage />} />

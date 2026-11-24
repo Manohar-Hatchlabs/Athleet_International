@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import {
   Alert, Avatar, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, InputLabel,
-  Menu, MenuItem, Select, Stack, Tab, Table, TableBody, TableCell, TableHead, TablePagination, TableRow, Tabs, TextField,
+  Link, Menu, MenuItem, Select, Stack, Tab, Table, TableBody, TableCell, TableHead, TablePagination, TableRow, Tabs, TextField,
   Tooltip,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { api, errorMessage } from '../api/client';
 import type { Page, Student, StudentStatus, StudentSummary } from '../api/types';
 import { useOrg } from '../org/OrgContext';
@@ -101,6 +102,7 @@ function DeregisterDialog({ student, onClose }: { student: StudentSummary | null
 export function StudentsPage() {
   const { orgId, can, centerLabel } = useOrg();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const manage = can('STUDENT', 'MANAGE');
   const viewAttendance = can('ATTENDANCE');
   const [status, setStatus] = useState<StudentStatus>('ACTIVE');
@@ -134,6 +136,7 @@ export function StudentsPage() {
     setMenu(null);
     setActionError(null);
     try {
+      if (action === 'profile') navigate(`/org/${orgId}/students/${row.id}`);
       if (action === 'edit') setDialog({ open: true, student: await loadFull(row.id) });
       if (action === 'batches') setBatchesFor(await loadFull(row.id));
       if (action === 'deregister') setDeregFor(row);
@@ -177,7 +180,11 @@ export function StudentsPage() {
                 {list.data.items.map((s) => (
                   <TableRow key={s.id} hover>
                     <TableCell><Avatar sx={{ width: 32, height: 32, fontSize: 14 }}>{s.firstName[0]}</Avatar></TableCell>
-                    <TableCell>{s.firstName} {s.lastName ?? ''}</TableCell>
+                    <TableCell>
+                      <Link component={RouterLink} to={`/org/${orgId}/students/${s.id}`} underline="hover" color="inherit">
+                        {s.firstName} {s.lastName ?? ''}
+                      </Link>
+                    </TableCell>
                     <TableCell>{s.studentNo}</TableCell>
                     <TableCell>{s.center.name}</TableCell>
                     <TableCell>{s.batches.map((b) => b.name).join(', ')}</TableCell>
@@ -203,6 +210,7 @@ export function StudentsPage() {
       </Panel>
 
       <Menu anchorEl={menu?.el} open={!!menu} onClose={() => setMenu(null)}>
+        <MenuItem onClick={() => menu && act('profile', menu.row)}>Profile</MenuItem>
         {manage && menu?.row.status === 'SUBMITTED' && <MenuItem onClick={() => act('approve', menu.row)}>Approve</MenuItem>}
         {manage && <MenuItem onClick={() => menu && act('edit', menu.row)}>Edit</MenuItem>}
         {manage && <MenuItem onClick={() => menu && act('batches', menu.row)}>Batches</MenuItem>}

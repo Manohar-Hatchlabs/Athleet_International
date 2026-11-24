@@ -213,7 +213,29 @@ export interface Student {
   grade?: string;
   dominantSide?: 'LEFT' | 'RIGHT' | 'BOTH';
   medicalCondition?: string;
+  kitSize?: string;
+  contacts: StudentContact[];
   status: StudentStatus;
+}
+
+export interface StudentContact {
+  name: string;
+  relationship?: string;
+  countryCode?: string;
+  mobile: string;
+  email?: string;
+}
+
+export interface TrainingDay {
+  batch: NamedRef;
+  day: DayOfWeek;
+  startTime: string;
+  endTime: string;
+}
+
+export interface StudentProfile {
+  student: Student;
+  trainingDays: TrainingDay[];
 }
 
 export interface HeadcountRow {
