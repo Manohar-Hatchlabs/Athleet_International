@@ -11,6 +11,11 @@ node_modules/
 *.pem
 *.key
 
+# Local run scripts and their logs
+start.sh
+stop.sh
+.run/
+
 # IDE / OS
 .idea/
 *.iml
