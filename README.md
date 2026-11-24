@@ -25,10 +25,11 @@ affiliates, Primary / Academy Admin views), roles with a permission matrix, staf
 coaches, capacity), students (Active / Submitted, add/edit, batches/transfer, deregistration, approve), dashboard
 (headcount, age, gender, utilization), branding (center label, currency, date format).
 
-Attendance backend (student sessions with approval, staff in/out with selfie and geofence flag, configuration, live view,
-tracker) is built and available through the API; its screens come next.
+Attendance is built end to end: student sessions with approval, staff in/out with selfie and geofence flag, configuration,
+live view and tracker, in the API and in the web admin (Attendance page, My attendance punch, Dashboard → Attendance,
+Settings → Attendance Configuration, student month view).
 
-Next, from the inventory: attendance screens, reports, requests, expenses, messaging, posts, assessment, coaching drills,
+Next, from the inventory: reports, requests, expenses, messaging, posts, assessment, coaching drills,
 remaining settings. **Fees are deferred to the final phase.**
 
 ## Run locally

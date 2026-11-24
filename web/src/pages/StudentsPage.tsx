@@ -13,9 +13,10 @@ import { useOrg } from '../org/OrgContext';
 import { EmptyState, PageHeader, Panel, SearchBox, useDebounced } from '../components/common';
 import { useBatchOptions, useCenterOptions } from '../components/options';
 import { StudentDialog } from './StudentDialog';
+import { StudentMonthDialog } from './attendance/StudentMonthDialog';
 import { Loading } from '../App';
 
-const LATER = ['ID Card', 'Attendance', 'Tag Student', 'Injury Log', 'Student History'];
+const LATER = ['ID Card', 'Tag Student', 'Injury Log', 'Student History'];
 
 function useStudentCount(orgId: string, status: StudentStatus) {
   return useQuery({
@@ -101,6 +102,7 @@ export function StudentsPage() {
   const { orgId, can, centerLabel } = useOrg();
   const qc = useQueryClient();
   const manage = can('STUDENT', 'MANAGE');
+  const viewAttendance = can('ATTENDANCE');
   const [status, setStatus] = useState<StudentStatus>('ACTIVE');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
@@ -110,6 +112,7 @@ export function StudentsPage() {
   const [menu, setMenu] = useState<{ el: HTMLElement; row: StudentSummary } | null>(null);
   const [batchesFor, setBatchesFor] = useState<Student | null>(null);
   const [deregFor, setDeregFor] = useState<StudentSummary | null>(null);
+  const [attendanceFor, setAttendanceFor] = useState<StudentSummary | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
   const active = useStudentCount(orgId, 'ACTIVE');
@@ -135,6 +138,7 @@ export function StudentsPage() {
       if (action === 'batches') setBatchesFor(await loadFull(row.id));
       if (action === 'deregister') setDeregFor(row);
       if (action === 'approve') approve.mutate(row.id);
+      if (action === 'attendance') setAttendanceFor(row);
     } catch (e) {
       setActionError(errorMessage(e));
     }
@@ -181,7 +185,7 @@ export function StudentsPage() {
                     <TableCell>{s.grade ?? '—'}</TableCell>
                     <TableCell sx={{ wordBreak: 'break-all' }}>{s.email ?? '—'}</TableCell>
                     <TableCell align="right">
-                      {manage && (
+                      {(manage || viewAttendance) && (
                         <IconButton size="small" aria-label="Select Action" onClick={(e) => setMenu({ el: e.currentTarget, row: s })}>
                           <MoreVertIcon fontSize="small" />
                         </IconButton>
@@ -199,17 +203,19 @@ export function StudentsPage() {
       </Panel>
 
       <Menu anchorEl={menu?.el} open={!!menu} onClose={() => setMenu(null)}>
-        {menu?.row.status === 'SUBMITTED' && <MenuItem onClick={() => act('approve', menu.row)}>Approve</MenuItem>}
-        <MenuItem onClick={() => menu && act('edit', menu.row)}>Edit</MenuItem>
-        <MenuItem onClick={() => menu && act('batches', menu.row)}>Batches</MenuItem>
-        <MenuItem onClick={() => menu && act('batches', menu.row)}>Transfer Student</MenuItem>
-        <MenuItem onClick={() => menu && act('deregister', menu.row)}>Deregistration</MenuItem>
-        {LATER.map((l) => <MenuItem key={l} disabled>{l} (coming soon)</MenuItem>)}
+        {manage && menu?.row.status === 'SUBMITTED' && <MenuItem onClick={() => act('approve', menu.row)}>Approve</MenuItem>}
+        {manage && <MenuItem onClick={() => menu && act('edit', menu.row)}>Edit</MenuItem>}
+        {manage && <MenuItem onClick={() => menu && act('batches', menu.row)}>Batches</MenuItem>}
+        {manage && <MenuItem onClick={() => menu && act('batches', menu.row)}>Transfer Student</MenuItem>}
+        {manage && <MenuItem onClick={() => menu && act('deregister', menu.row)}>Deregistration</MenuItem>}
+        {viewAttendance && <MenuItem onClick={() => menu && act('attendance', menu.row)}>Attendance</MenuItem>}
+        {manage && LATER.map((l) => <MenuItem key={l} disabled>{l} (coming soon)</MenuItem>)}
       </Menu>
 
       <StudentDialog open={dialog.open} student={dialog.student} onClose={() => setDialog({ open: false })} />
       <BatchesDialog student={batchesFor} onClose={() => setBatchesFor(null)} />
       <DeregisterDialog student={deregFor} onClose={() => setDeregFor(null)} />
+      <StudentMonthDialog student={attendanceFor} onClose={() => setAttendanceFor(null)} />
     </>
   );
 }

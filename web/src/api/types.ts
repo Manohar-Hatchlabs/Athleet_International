@@ -246,3 +246,191 @@ export interface GeneralDashboard {
   headcount: HeadcountRow[];
   utilization: UtilizationRow[];
 }
+
+// ---- attendance ----
+
+export type SessionStatus = 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'RESUBMITTED';
+export type MarkStatus = 'PRESENT' | 'ABSENT';
+
+export interface AttendanceConfig {
+  selfieRequired: boolean;
+  tasksOnOut: boolean;
+  showDeviceInfo: boolean;
+  allowDateOverride: boolean;
+  maxBackDays: number;
+  maxForwardDays: number;
+}
+
+export interface SessionBatch {
+  batchId: string;
+  batchName: string;
+  centerId: string;
+  centerName: string;
+  sessionId?: string;
+  status?: SessionStatus;
+  present: number;
+  absent: number;
+  total: number;
+}
+
+export interface SessionMark {
+  studentId: string;
+  studentNo: number;
+  studentName: string;
+  status?: MarkStatus;
+  remark?: string;
+}
+
+export interface SessionDetail {
+  id?: string;
+  version?: number;
+  centerId: string;
+  batchId: string;
+  batchName: string;
+  date: string;
+  status?: SessionStatus;
+  reviewReason?: string;
+  editable: boolean;
+  canSubmit: boolean;
+  canReview: boolean;
+  marks: SessionMark[];
+}
+
+export interface SessionSummary {
+  id: string;
+  version: number;
+  centerId: string;
+  centerName: string;
+  batchId: string;
+  batchName: string;
+  date: string;
+  status: SessionStatus;
+  present: number;
+  absent: number;
+  unmarked: number;
+}
+
+export interface Shift {
+  id: string;
+  version: number;
+  userId: string;
+  staffName: string;
+  centerId?: string;
+  centerName?: string;
+  batchId?: string;
+  batchName?: string;
+  workDate: string;
+  inAt: string;
+  outAt?: string;
+  source: string;
+  inDistanceM?: number;
+  inOutsideGeofence?: boolean;
+  outDistanceM?: number;
+  outOutsideGeofence?: boolean;
+  hasInSelfie: boolean;
+  hasOutSelfie: boolean;
+  tasks?: string;
+  deviceId?: string;
+  phoneType?: string;
+  corrected: boolean;
+}
+
+export interface ShiftDetail {
+  shift: Shift;
+  inSelfieUrl?: string;
+  outSelfieUrl?: string;
+  correctionReason?: string;
+}
+
+export interface MyDay {
+  date: string;
+  config: AttendanceConfig;
+  openShift?: Shift;
+  shifts: Shift[];
+}
+
+export interface LiveStaffRow {
+  userId: string;
+  name: string;
+  status: 'IN' | 'OUT' | 'NOT_IN';
+  inAt?: string;
+  outAt?: string;
+  batchName?: string;
+  outsideGeofence?: boolean;
+  deviceId?: string;
+  phoneType?: string;
+}
+
+export interface LiveSessionRow {
+  batchId: string;
+  batchName: string;
+  coaches: string[];
+  status?: SessionStatus;
+  present: number;
+  absent: number;
+  total: number;
+}
+
+export interface LiveGroup {
+  id: string;
+  name: string;
+  staff: LiveStaffRow[];
+  sessions: LiveSessionRow[];
+}
+
+export interface LiveAttendance {
+  date: string;
+  groupedBy: string;
+  groups: LiveGroup[];
+}
+
+export interface TrackerCell {
+  date: string;
+  code?: string;
+  pending: boolean;
+  inAt?: string;
+  outAt?: string;
+  outsideGeofence?: boolean;
+}
+
+export interface TrackerRow {
+  id: string;
+  name: string;
+  subtitle?: string;
+  cells: TrackerCell[];
+  present: number;
+  absent: number;
+  percent: number;
+}
+
+export interface TrackerGrid {
+  type: 'STAFF' | 'STUDENT';
+  from: string;
+  to: string;
+  days: string[];
+  rows: TrackerRow[];
+  page: number;
+  size: number;
+  total: number;
+}
+
+export interface StudentDay {
+  date: string;
+  batchName: string;
+  status?: MarkStatus;
+  sessionStatus?: SessionStatus;
+}
+
+export interface StudentMonth {
+  studentId: string;
+  studentName: string;
+  month: string;
+  present: number;
+  absent: number;
+  percent: number;
+  days: StudentDay[];
+}
+
+export interface FileResponse {
+  id: string;
+}
