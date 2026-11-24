@@ -46,7 +46,7 @@ function MarkStudents() {
                     <TableCell><StatusChip status={b.status} /></TableCell>
                     <TableCell align="right">{b.present}</TableCell>
                     <TableCell align="right">{b.absent}</TableCell>
-                    <TableCell align="right">{b.total}</TableCell>
+                    <TableCell align="right">{b.sessionId ? b.total : '—'}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
