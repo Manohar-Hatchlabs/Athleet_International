@@ -34,6 +34,16 @@ public interface StudentRepository extends JpaRepository<Student, UUID> {
             """)
     Page<Student> search(UUID orgId, StudentStatus status, UUID centerId, UUID batchId, String search, Pageable pageable);
 
+    /** Roster of a batch for attendance: students currently active in it. */
+    @Query("""
+            select s from Student s where s.organizationId = :orgId and :batchId member of s.batchIds
+              and s.status = com.athleet.academy.student.domain.StudentStatus.ACTIVE
+            order by s.firstName, s.lastName, s.id
+            """)
+    List<Student> activeInBatch(UUID orgId, UUID batchId);
+
+    List<Student> findByOrganizationIdAndIdIn(UUID organizationId, Collection<UUID> ids);
+
     boolean existsByCenterId(UUID centerId);
 
     @Query("select count(s) > 0 from Student s where :batchId member of s.batchIds and s.status <> com.athleet.academy.student.domain.StudentStatus.DEREGISTERED")

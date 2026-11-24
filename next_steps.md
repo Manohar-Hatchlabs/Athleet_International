@@ -25,6 +25,20 @@ Done and merged to `main`:
 | Settings | Branding Preference only (center label, currency, date format). Every other settings section is a placeholder |
 | Web admin | React screens for all of the above; other sidebar items open a "Coming soon" page (`/org/:orgId/soon/:module`) |
 
+On branch `feature/attendance` (backend done and smoke-tested through the API, **no attendance screens yet**):
+
+| Area | What exists |
+|---|---|
+| Permissions | `ATTENDANCE` (view / mark) and `ATTENDANCE_APPROVAL` (approve, reject, reopen, correct punches) modules in the Roles matrix; default roles and a backfill migration for existing ones |
+| Student attendance | Per batch and date, approval workflow DRAFT → SUBMITTED → APPROVED / REJECTED → RESUBMITTED, Present / Absent marks, roster merge, optimistic locking, date window and training-day checks. Approval publishes `AttendanceSessionApproved` (no alerts sent yet) |
+| Staff attendance | Self punch in/out (web or Staff app, `clientId` makes retries safe), selfie, tasks on out, geofence distance recorded and flagged (never blocks), supervisor add / correct with a reason |
+| Configuration | Attendance Configuration per organization: mandatory selfie, tasks with out punch, device info in reports, backdate / forward-date window |
+| Reports (API) | Live attendance (per academy or class), tracker grid (staff or students, max 31 days), one student's month |
+| File storage | Core `FileStorage` (local disk in dev, S3 later), validated and re-encoded uploads (EXIF stripped), short-lived signed download links |
+
+Still to build for Phase 1: the screens (mark and approve sessions, My attendance punch, Dashboard → Attendance tab,
+Settings → Attendance Configuration form, student row action "Attendance"). The API is ready for them.
+
 Notes on what "done" means here:
 - **Transfer Student** currently opens the same dialog as **Batches**: it moves a student between centers and batches
   *inside one academy*. Transfer **between academies** (Acadware's `TransferPlayer`) is not built; it is in Phase 2.
@@ -52,6 +66,9 @@ Gotchas:
   `JAVA_HOME` to the JDK 21 folder (PowerShell: `$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21...'`).
 - In the `dev` profile, invite and reset links are written to the backend log instead of being emailed.
 - Stop the running backend before rebuilding on Windows, or the jar stays locked.
+- File uploads (attendance selfies) need `STORAGE_URL_SECRET` in `backend/.env` (at least 32 random characters). The
+  `dev` profile uses local storage and the app will not start without it. Uploaded files go to `~/.athleet/files`
+  unless `STORAGE_LOCAL_ROOT` is set. Without the `dev` profile, storage is off and uploads are refused.
 
 ---
 
@@ -96,11 +113,17 @@ Use the existing **student** and **center** packages as templates:
 Each item maps to an `AppModule` value and to a section of the inventory. "Done when" is the acceptance bar.
 
 ### Phase 1 — Attendance (highest value)
-- **Staff attendance**: in/out punches with optional selfie and device ID; backdate/forward-date rule.
-- **Student attendance**: mark per batch session.
-- **Attendance Configuration** settings (inventory §10).
-- **Dashboard → Attendance tab**: Live Attendance (staff in/out per academy today) and Attendance Tracker (monthly grid).
+- [x] **Staff attendance** (API): in/out punches with optional selfie and device ID; backdate/forward-date rule.
+- [x] **Student attendance** (API): mark per batch session, with approval.
+- [x] **Attendance Configuration** settings (API, inventory §10).
+- [x] **Live Attendance and Attendance Tracker** (API).
+- [ ] **Screens**: Attendance page (mark students, approvals, staff in/out), My attendance (punch with selfie),
+  Dashboard → Attendance tab (Live + Tracker), Settings → Attendance Configuration form, student row action "Attendance".
 - Done when: a coach can mark a batch, an admin sees it on the dashboard and tracker, and config rules are enforced server-side.
+  The rules and the data are done; the screens are what remains.
+- Known limits: the time zone is fixed to Asia/Kolkata (add `organization.timezone` for other regions), the
+  configuration is per organization (affiliates do not inherit it), and absence alerts are not sent yet (hook:
+  `AttendanceSessionApproved` event).
 
 ### Phase 2 — Student profile completion (inventory §11.2)
 - Student profile page (opens from a row): details, secondary contacts, kit size, training days, history.

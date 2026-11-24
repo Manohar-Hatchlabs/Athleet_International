@@ -1,5 +1,6 @@
 package com.athleet.core.iam.service;
 
+import com.athleet.core.common.error.BusinessRuleException;
 import com.athleet.core.common.error.ForbiddenException;
 import com.athleet.core.common.error.NotFoundException;
 import com.athleet.core.common.security.AuthUser;
@@ -59,6 +60,27 @@ public class AccessService {
     @Transactional(readOnly = true)
     public OrgAccess resolve(UUID organizationId) {
         return find(organizationId).orElseThrow(() -> new NotFoundException("Organization not found."));
+    }
+
+    /**
+     * The caller's own active, non-student staff membership in this organization. Used for self-service actions
+     * (punch in/out, uploads) that belong to a person rather than to a permission.
+     */
+    @Transactional(readOnly = true)
+    public StaffContext requireStaff(UUID organizationId) {
+        AuthUser user = currentUser.require();
+        Membership m = memberships.findByUserIdAndOrganizationIdAndStatus(user.id(), organizationId, MembershipStatus.ACTIVE)
+                .orElseThrow(AccessService::notStaff);
+        Role role = roles.findById(m.getRoleId()).orElseThrow(AccessService::notStaff);
+        if (role.getRoleType() == RoleType.STUDENT || (role.getRoleType() == RoleType.CENTER && m.getCenterId() == null)) {
+            throw notStaff();
+        }
+        return new StaffContext(user.id(), organizationId, role.getRoleType(),
+                role.getRoleType() == RoleType.CENTER ? m.getCenterId() : null);
+    }
+
+    private static BusinessRuleException notStaff() {
+        return new BusinessRuleException("NOT_STAFF", "Only staff of this academy can do this.");
     }
 
     /** Non-throwing check, safe to call inside a caller's transaction (a thrown exception would mark it rollback-only). */
